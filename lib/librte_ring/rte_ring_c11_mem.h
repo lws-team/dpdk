@@ -61,12 +61,14 @@ __rte_ring_move_prod_head(struct rte_ring *r, unsigned int is_sp,
 	int success;
 
 	do {
+		const uint32_t cons_tail = r->cons.tail;
+
 		/* Reset n to the initial burst count */
 		n = max;
 
 		*old_head = __atomic_load_n(&r->prod.head,
 					__ATOMIC_ACQUIRE);
-		const uint32_t cons_tail = r->cons.tail;
+
 		/*
 		 *  The subtraction is done between two unsigned 32bits value
 		 * (the result is always modulo 32 bits even if we have
@@ -129,11 +131,13 @@ __rte_ring_move_cons_head(struct rte_ring *r, int is_sc,
 
 	/* move cons.head atomically */
 	do {
+		const uint32_t prod_tail = r->prod.tail;
+
 		/* Restore n as it may change every loop */
 		n = max;
 		*old_head = __atomic_load_n(&r->cons.head,
 					__ATOMIC_ACQUIRE);
-		const uint32_t prod_tail = r->prod.tail;
+
 		/* The subtraction is done between two unsigned 32bits value
 		 * (the result is always modulo 32 bits even if we have
 		 * cons_head > prod_tail). So 'entries' is always between 0
